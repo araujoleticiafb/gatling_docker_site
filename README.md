@@ -1,5 +1,5 @@
 
-# Load Testing with Gatling
+# Load Testing with Gatling 
 
 ## About the project
 The idea behind this project is to execute load testing using Gatling with Docker. Also, a static site, which contains all results, is generated. Thinking about usability, the site supports this point of view become easier to access the default result that Gatling creates.
