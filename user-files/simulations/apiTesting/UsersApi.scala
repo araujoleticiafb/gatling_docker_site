@@ -9,25 +9,26 @@ class UsersApi extends Simulation {
 
   val httpProtocol = http
     .baseUrl("https://reqres.in/api") 
-    .acceptHeader("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
   
   val header = Map(
     "Content-Type" -> "application/json"
   )
+
+  val csvFeeder = csv("create-user2.csv").queue
 
   object ListOfUsers {
     val listOfUsers = exec(
       http("List of users")
       .get("/users")
       .headers(header)
-      .queryParam("page", "2")
+      .queryParam("page", dem.page)
       .check(status.is(200))
     )
   }
 
   object SuccessfullyLogin {
     val successfullyLogin = exec(
-      http("successfully login")
+      http("Successfully login")
       .post("/login")
       .headers(header)
       .body(ElFileBody("successfully-login.json"))
@@ -60,6 +61,17 @@ class UsersApi extends Simulation {
     )
   }
 
+  object CreateUserCsv {
+    val createUserCsv = exec(
+      http("Create user CSV")
+      .post("/users")
+      .headers(header)
+      .body(StringBody("""{"name": "${name}", "job": "${job}"}"""))
+      .asJson
+      .check(status.is(201))
+    )
+  }
+
   object UpdateUser {
     val updateUser = exec(
       http("Update user")
@@ -79,9 +91,13 @@ class UsersApi extends Simulation {
     UpdateUser.updateUser
   )
 
+  val createUserTestingScn = scenario("Testing create user")
+    .feed(csvFeeder)
+    .exec(CreateUserCsv.createUserCsv)
+
+
   setUp(
-    basicTestingScn.inject(
-      constantUsersPerSec(dem.nbInicialUsers).during(dem.myTestDuration)
-    ).protocols(httpProtocol)
-  )
+    basicTestingScn.inject(constantUsersPerSec(dem.nbInicialUsers).during(dem.myTestDuration)),
+    createUserTestingScn.inject(constantUsersPerSec(dem.nbInicialUsers).during(dem.myTestDuration))
+  ).protocols(httpProtocol)
 }
