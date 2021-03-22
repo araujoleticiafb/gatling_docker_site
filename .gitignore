@@ -1,2 +1,7 @@
+### Scala ###
 *.class
 *.log
+target/*
+results/*
+.DS_Store
+.DS_Store?
